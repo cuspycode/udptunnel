@@ -568,13 +568,12 @@ int sock_send(socket_t *to, char *data, int len)
 int isipaddr(char *ip, int ipver)
 {
     char addr[sizeof(struct in6_addr)];
-    int len;
     int af_type;
 
     af_type = (ipver == SOCK_IPV6) ? AF_INET6 : AF_INET;
-    len = sizeof(addr);
     
 #ifdef WIN32
+    int len = sizeof(addr);
     if(WSAStringToAddress(ip, af_type, NULL, PADDR(addr), &len) == 0)
         return 1;
 #else /*~WIN32*/    
