@@ -99,7 +99,7 @@ socket_t *sock_create(char *host, char *port, int ipver, int sock_type,
 
     if(conn)
     {
-        if(sock_connect(sock, is_serv) != 0)
+        if(sock_connect(sock, is_serv, port) != 0)
             goto error;
     }
 
@@ -136,9 +136,10 @@ socket_t *sock_copy(socket_t *sock)
  * to destination specified in sock_create(). Returns -1 on error or -2 if
  * the sockect is already connected.
  */
-int sock_connect(socket_t *sock, int is_serv)
+int sock_connect(socket_t *sock, int is_serv, char *port)
 {
     struct sockaddr *paddr;
+    struct sockaddr_in sa;
     int ret;
 
     if(sock->fd != -1)
@@ -150,15 +151,27 @@ int sock_connect(socket_t *sock, int is_serv)
     sock->fd = socket(paddr->sa_family, sock->type, 0);
     PERROR_GOTO(sock->fd < 0, "socket", error);
     
+    sa.sin_family = AF_INET;
+    sa.sin_port = htons(atoi(port));
+    sa.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    int sockopt_val = 1;
+    setsockopt(sock->fd, SOL_SOCKET, SO_REUSEADDR, &sockopt_val, sizeof(int));
+    setsockopt(sock->fd, SOL_SOCKET, SO_REUSEPORT, &sockopt_val, sizeof(int));
+ 
+    if(sock->type == SOCK_DGRAM)
+        if( bind(sock->fd, (const struct sockaddr *)&sa, sizeof(struct sockaddr_in))!= 0)
+	    printf("Bind failed\n");
+
     if(is_serv)
     {
-        /* Bind socket to address and port */
-        ret = bind(sock->fd, paddr, sock->addr_len);
-        PERROR_GOTO(ret != 0, "bind", error);
-        
         /* Start listening on the port if tcp */
         if(sock->type == SOCK_STREAM)
         {
+	    /* Bind socket to address and port */
+	    ret = bind(sock->fd, paddr, sock->addr_len);
+	    PERROR_GOTO(ret != 0, "bind", error);
+
             ret = listen(sock->fd, BACKLOG);
             PERROR_GOTO(ret != 0, "listen", error);
         }

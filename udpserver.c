@@ -48,7 +48,7 @@ static int next_client_id = 1;
 static int handle_message(uint16_t id, uint8_t msg_type, char *data,
                           int data_len, socket_t *from, list_t *clients,
                           fd_set *client_fds,
-                          list_t *acls);
+                          list_t *acls, char *port_str);
 static void disconnect_and_remove_client(uint16_t id, list_t *clients,
                                          fd_set *fds, int full_disconnect);
 static void signal_handler(int sig);
@@ -235,7 +235,7 @@ int udpserver(int argc, char *argv[])
             
             if(ret == 0)
                 ret = handle_message(tmp_id, tmp_type, data, tmp_len,
-                                     udp_from, clients, &client_fds, acls);
+                                     udp_from, clients, &client_fds, acls, port_str);
             if(ret < 0)
                 disconnect_and_remove_client(tmp_id, clients, &client_fds, 1);
 
@@ -352,7 +352,7 @@ void disconnect_and_remove_client(uint16_t id, list_t *clients,
  */
 int handle_message(uint16_t id, uint8_t msg_type, char *data, int data_len,
                    socket_t *from, list_t *clients, fd_set *client_fds,
-                   list_t *acls)
+                   list_t *acls, char *port_str)
 {
     client_t *c = NULL;
     client_t *c2 = NULL;
@@ -470,7 +470,7 @@ int handle_message(uint16_t id, uint8_t msg_type, char *data, int data_len,
 
         /* Can connect to TCP connection once received the Hello ACK */
         case MSG_TYPE_HELLOACK:
-            if(client_connect_tcp(c) != 0)
+            if(client_connect_tcp(c, port_str) != 0)
                 return -2;
             client_got_helloack(c);
             client_add_tcp_fd_to_set(c, client_fds);

@@ -61,7 +61,7 @@ typedef struct socket {
 socket_t *sock_create(char *host, char *port, int ipver, int sock_type,
                       int is_serv, int conn);
 socket_t *sock_copy(socket_t *sock);
-int sock_connect(socket_t *sock, int is_serv);
+int sock_connect(socket_t *sock, int is_serv, char *port);
 socket_t *sock_accept(socket_t *serv);
 void sock_close(socket_t *s);
 void sock_free(socket_t *s);

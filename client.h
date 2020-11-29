@@ -70,7 +70,7 @@ client_t *client_create(uint16_t id, socket_t *tcp_sock, socket_t *udp_sock,
                         int connected);
 client_t *client_copy(client_t *dst, client_t *src, size_t len);
 int client_cmp(client_t *c1, client_t *c2, size_t len);
-int client_connect_tcp(client_t *c);
+int client_connect_tcp(client_t *c, char *port);
 void client_disconnect_tcp(client_t *c);
 void client_disconnect_udp(client_t *c);
 void client_free(client_t *c);

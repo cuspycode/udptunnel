@@ -134,11 +134,11 @@ int client_cmp(client_t *c1, client_t *c2, size_t len)
  * Connects the TCP socket of the client (wrapper for sock_connect()). Returns
  * 0 on success or -1 on error.
  */
-int client_connect_tcp(client_t *c)
+int client_connect_tcp(client_t *c, char *port)
 {
     if(!c->connected)
     {
-        if(sock_connect(c->tcp_sock, 0) == 0)
+        if(sock_connect(c->tcp_sock, 0, port) == 0)
         {
             c->connected = 1;
             return 0;
